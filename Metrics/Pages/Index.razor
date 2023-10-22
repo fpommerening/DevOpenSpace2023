@@ -1,0 +1,76 @@
+﻿@page "/"
+<PageTitle>Metrics Playground</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12" >
+        <MudText Typo="Typo.h6">Counter</MudText>
+        <MudStack Row="true">
+            <MudButton Size="Size.Medium" 
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddCircleOutline"
+                       OnClick="IncrementCounter">Increment</MudButton>
+            <MudText Typo="Typo.body1">current value: @_counterCurrentValue</MudText>    
+        </MudStack>
+    </MudItem>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h6">UpDownCounter</MudText>
+        <MudStack Row="true">
+            <MudButton Size="Size.Medium" 
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddCircleOutline"
+                       OnClick="IncrementUpDownCounter">Increment</MudButton>
+            <MudButton Size="Size.Medium" 
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.RemoveCircleOutline"
+                       OnClick="DecrementUpDownCounter">Decrement</MudButton>
+            <MudText Typo="Typo.body1">current value: @_upDownCounterCurrentValue</MudText>    
+        </MudStack>
+    </MudItem>
+    
+    <MudItem xs="6">
+        <MudText Typo="Typo.h6">Gauge</MudText>
+        <MudSlider @bind-Value="_gaugeCurrentValue" Min="0" Max="150" Color="Color.Primary">current value: @_gaugeCurrentValue.ToString()</MudSlider>
+    </MudItem>
+    <MudItem xs="6"/>
+       <MudItem xs="6">
+            <MudText Typo="Typo.h6">Histogramm</MudText>
+           <MudSlider @bind-Value="_histogramValue" Min="0" Max="3" Step="0.01" Color="Color.Primary">current value: @_histogramValue.ToString("F2")</MudSlider>
+            <MudButton Size="Size.Medium" 
+                                  Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  StartIcon="@Icons.Material.Filled.Save"
+                                  OnClick="RegisterHistogramEntry">Record</MudButton>
+        </MudItem>
+        <MudItem xs="6"/>
+</MudGrid>
+
+@code {
+
+    private int _counterCurrentValue = 0;
+    private int _upDownCounterCurrentValue = 0;
+    private int _gaugeCurrentValue = 0;
+    private double _histogramValue = double.Epsilon;
+    
+    private void IncrementCounter()
+    {
+        _counterCurrentValue++;
+    }
+    
+    private void IncrementUpDownCounter()
+    {
+        _upDownCounterCurrentValue++;
+    }
+    
+    private void DecrementUpDownCounter()
+    {
+        _upDownCounterCurrentValue--;
+    }
+    
+    private void RegisterHistogramEntry()
+    {
+        System.Diagnostics.Debug.WriteLine(_histogramValue);
+    }
+}
