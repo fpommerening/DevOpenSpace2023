@@ -1,0 +1,55 @@
+﻿@page "/Logging"
+
+@inject ILogger<Logging> _logger;
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudTextField 
+            @bind-Value="Model.Message" 
+            Variant="Variant.Outlined" 
+            Lines="8" 
+            Label="Message"/>
+    </MudItem>
+    <MudItem xs="12">
+        <MudSelect T="LogLevel"  @bind-Value="Model.Level" Label="Level" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+            @foreach (LogLevel logLevel in Enum.GetValues(typeof(LogLevel)))
+            {
+                <MudSelectItem Value="@logLevel">@logLevel</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="8"></MudItem>
+    <MudItem xs="4">
+        <MudButton 
+            FullWidth="false" 
+            Variant="Variant.Outlined" 
+            Color="Color.Primary"
+                Disabled="@(Model.CreateIsDisabled)"
+            OnClick="CreateLogEntry">Create Log</MudButton>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    private LoggingViewModel Model = new LoggingViewModel();
+    
+    private void CreateLogEntry()
+    {
+        _logger.Log(Model.Level, "Log Entry {Message} created", Model.Message);
+        Model.Clear();    
+    }
+
+    private class LoggingViewModel
+    {
+        public string? Message { get; set; }
+        public LogLevel Level { get; set; } = LogLevel.None;
+
+        public bool CreateIsDisabled => string.IsNullOrEmpty(Message) || Level == LogLevel.None;
+
+        public void Clear()
+        {
+            Message = string.Empty;
+            Level = LogLevel.None;
+        }
+    }
+}

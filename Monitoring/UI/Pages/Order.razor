@@ -1,0 +1,132 @@
+﻿@page "/order/{productId:guid}"
+@using FP.Monitoring.UI.Business
+
+@inject OrderRepository OrderRepository;
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager;
+
+@if (Model == null)
+{
+    return;
+}
+
+<PageTitle>Bestellung</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudTextField @bind-Value="Model.ProductName" Label="Produkt" ReadOnly="true"/>
+    </MudItem>
+    <MudItem xs="12">
+        <MudTextField @bind-Value="Model.Customer"  Label="Kunde"/>
+    </MudItem>
+    <MudItem xs="4">
+        <MudNumericField @bind-Value="Model.Quantity" Label="Menge" Variant="Variant.Text" Min="0" Max="10" />
+    </MudItem>
+    <MudItem xs="8">
+        
+    </MudItem>
+    <MudItem xs="6">
+        <MudTextField @bind-Value="Model.CardType" Label="Kartentyp"/>
+    </MudItem>
+    <MudItem xs="6">
+        <MudTextField @bind-Value="Model.CardNumber" Label="Kartennummer"/>
+    </MudItem>
+    <MudItem xs="12">
+        <MudButton FullWidth="false" Disabled="OrderDisabled" Variant="Variant.Outlined" Color="Color.Primary" OnClick="async () => await OrderProduct()">
+             @if (OrderInProgress)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    <MudText Class="ms-2">Bestellung wird ausgeführt</MudText>
+                }
+                else
+                {
+                    <MudText>Bestellen</MudText>
+                }
+        </MudButton>
+    </MudItem>
+</MudGrid>
+@code {
+
+    [Parameter]
+    public Guid ProductId { get; set; } = Guid.Empty;
+    
+    private OrderViewModel? Model { get; set; }
+
+    private bool OrderInProgress = false;
+
+    private bool OrderDisabled => Model == null || Model.IsValid == false || OrderInProgress;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Model ??= new OrderViewModel();
+        
+        if (Model.ProductId == ProductId)
+        {
+            return;
+        }
+
+        Model.ProductId = ProductId;
+
+        var products = await OrderRepository.GetProducts();
+        var product = products.FirstOrDefault(x => x.Id == ProductId);
+        if (product == null)
+        {
+            return;
+        }
+        Model.ProductName = product.Name;
+    }
+
+    private async Task OrderProduct()
+    {
+        if (Model == null)
+        {
+            return;
+        }
+        
+        OrderInProgress = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await OrderRepository.OrderProduct(Model.ProductId,
+                Model.Quantity,
+                Model.Customer, 
+                Model.CardType, 
+                Model.CardNumber);
+
+            Snackbar.Add($"{Model.ProductName} wurde erfolgreich bestellt", Severity.Success);
+            NavigationManager.NavigateTo("/products");
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"Fehler bei der Bestellung von Produkt {Model.ProductName}.", Severity.Error);
+        }
+        finally
+        {
+            OrderInProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private class OrderViewModel
+    {
+        public Guid ProductId { get; set; }
+        
+        public string? ProductName { get; set; }
+        
+        public int Quantity { get; set; }
+
+        public string? Customer { get; set; }
+
+        public string? CardType { get; set; }
+
+        public string? CardNumber { get; set; }
+
+        public bool IsValid => ProductId != Guid.Empty &&
+                               Quantity > 0 &&
+                               !string.IsNullOrEmpty(Customer) &&
+                               !string.IsNullOrEmpty(CardType) &&
+                               !string.IsNullOrEmpty(CardNumber);
+    }
+
+}

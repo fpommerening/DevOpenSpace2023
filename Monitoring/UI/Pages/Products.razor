@@ -1,0 +1,91 @@
+﻿
+
+@page "/Products"
+@using UI.Business
+@using System.Diagnostics
+
+@inject OrderRepository OrderRepository;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>Produktübersicht</PageTitle>
+
+@if (_isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+}
+
+<MudGrid>
+    
+    <MudItem xs="12">
+    <MudTable Items="SortedData" Hover="true" Striped="true" Bordered="true" Breakpoint="Breakpoint.Sm">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Preis</MudTh>
+                    <MudTh>Menge</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Price">@context.Price</MudTd>
+                    <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+                    <MudTd> <MudIconButton Variant="Variant.Outlined" Title="Bestellen"
+                                Icon="@Icons.Material.Filled.ShoppingCart"
+                                Href="@($"order/{context.Id}")">Order</MudIconButton></MudTd>
+                </RowTemplate>
+            </MudTable>
+    </MudItem>
+</MudGrid>
+
+@code {
+    
+    private List<ProductViewModel> _data = new();
+    private bool _isLoading = true;
+    
+    private IEnumerable<ProductViewModel> SortedData
+    {
+        get { return _data.OrderBy(x => x.Name); }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await RefreshProducts();
+    }
+    
+    private async Task RefreshProducts()
+    {
+        Activity.Current = null;
+        
+        var products = await OrderRepository.GetProducts();
+        
+        foreach (var product in products)
+        {
+            var vm = _data.FirstOrDefault(x => x.Id == product.Id);
+            if (vm == null)
+            {
+                vm = new ProductViewModel
+                {
+                    Id = product.Id,
+                    Name = product.Name
+                };
+                _data.Add(vm);
+            }
+            vm.Quantity = product.Quantity;
+            vm.Price = product.Price;
+        }
+        _data.RemoveAll(x => products.All(p => p.Id != x.Id));
+        _isLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private class ProductViewModel
+    {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; }
+
+        public decimal Price { get; set; }
+
+        public int Quantity { get; set; }
+    }
+}
