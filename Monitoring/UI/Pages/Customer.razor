@@ -1,0 +1,115 @@
+@page "/Customer"
+@using FP.Monitoring.Contract
+
+@inject CustomerServices.CustomerServicesClient customerServiceCLient;
+
+<MudGrid>
+    <MudItem xs="6">
+        <MudTextField 
+            @bind-Value="Model.FirstName" 
+            Variant="Variant.Outlined" 
+            Label="Vorname"/>
+    </MudItem>
+    <MudItem xs="6">
+        <MudTextField 
+            @bind-Value="Model.LastName" 
+            Variant="Variant.Outlined" 
+            Label="Nachname"/>
+    </MudItem>
+    <MudItem xs="8">
+        <MudTextField 
+            @bind-Value="Model.Street" 
+            Variant="Variant.Outlined" 
+            Label="Straße"/>
+    </MudItem>
+    <MudItem xs="4"/>
+     <MudItem xs="8">
+            <MudTextField 
+                @bind-Value="Model.Town" 
+                Variant="Variant.Outlined" 
+                Label="Stadt"/>
+        </MudItem>
+    <MudItem xs="2">
+        <MudTextField 
+            @bind-Value="Model.ZipCode" 
+            Variant="Variant.Outlined" 
+            Label="PLZ"/>
+    </MudItem>
+   <MudItem xs="2"/>
+    <MudItem xs="6">
+        <MudProgressLinear Color="Color.Tertiary" Size="Size.Large" Min="0" Max="100" Value="@Model.Reliability">
+            <MudText Typo="Typo.body1">@Model.Reliability %</MudText>
+        </MudProgressLinear>
+    </MudItem>
+    <MudItem xs="2">
+            @if (Model.IsValid == false)
+            {
+                <MudChip Color="Color.Error">Kunde ungültig</MudChip>
+            }
+             @if (Model.IsValid == true)
+             {
+                 <MudChip Color="Color.Success">Kunde gültig</MudChip>
+             }
+        </MudItem>
+    <MudItem xs="4">
+        <MudButton 
+            FullWidth="false" 
+            Variant="Variant.Outlined" 
+            Color="Color.Primary"
+            Disabled="@(Model.ValidateIsDisabled)"
+            OnClick="ValidateCustomer">Prüfe Kunde</MudButton>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    CustomerViewModel Model = new CustomerViewModel
+    {
+        LastName = "Pommerening",
+        FirstName = "Frank",
+        Street = "Landstraße 42a",
+        Town = "Leipzig",
+        ZipCode = "12345"
+    };
+
+
+    private async Task ValidateCustomer()
+    {
+        var request = new RateCustomerRequest
+        {
+            Name = Model.LastName,
+            Firstname = Model.FirstName,
+            Street = Model.Street,
+            Town = Model.Town,
+            ZipCode = Model.ZipCode
+        };
+        var result = await customerServiceCLient.RateCustomerAsync(request);
+
+        Model.Reliability = result.Reliability;
+        Model.IsValid = result.IsValid;
+    }
+    
+    private class CustomerViewModel
+    {
+        public string? LastName { get; set; }
+        
+        public string? FirstName { get; set; }
+        
+        public string? Street { get; set; }
+        
+        public string? Town { get; set; }
+        
+        public string? ZipCode { get; set; }
+
+        public bool ValidateIsDisabled => string.IsNullOrEmpty(LastName) ||
+                                          string.IsNullOrEmpty(FirstName) ||
+                                          string.IsNullOrEmpty(Street) ||
+                                          string.IsNullOrEmpty(Town) ||
+                                          string.IsNullOrEmpty(ZipCode);
+
+        public bool? IsValid { get; set; }
+
+        public uint Reliability { get; set; } = 0;
+
+    }
+}

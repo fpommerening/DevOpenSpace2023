@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option csharp_namespace = "FP.Monitoring.Contract";
+
+package customers;
+
+service CustomerServices {
+  rpc RateCustomer (RateCustomerRequest) returns (RateCustomerResponse);
+}
+
+message RateCustomerRequest {
+  string requestId = 1;
+  string name = 2;
+  string firstname = 3;
+  string street = 4;
+  string town = 5;
+  string zipCode = 6;
+}
+
+
+message RateCustomerResponse {
+  string requestId = 1;
+  bool isValid = 2;
+  uint32 reliability =3; 
+}

@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Stack" type="CompoundRunConfigurationType">
+    <toRun name="CustomerService: http" type="LaunchSettings" />
     <toRun name="PaymentService: http" type="LaunchSettings" />
     <toRun name="StockService: http" type="LaunchSettings" />
     <toRun name="UI" type="LaunchSettings" />

@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using FP.Monitoring.Contract;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using MudBlazor.Services;
 using FP.Monitoring.UI.Business;
@@ -25,6 +24,11 @@ builder.Services.AddHttpClient("stockservice", c =>
 builder.Services.AddHttpClient("paymentservice", c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["PaymentServiceUrl"]);
+});
+
+builder.Services.AddGrpcClient<CustomerServices.CustomerServicesClient>(o =>
+{
+    o.Address = new Uri(builder.Configuration["CustomerServiceUrl"]);
 });
 
 var app = builder.Build();
