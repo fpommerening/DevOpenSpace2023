@@ -1,5 +1,7 @@
 using FP.Monitoring.CustomerService.Business;
 using FP.Monitoring.CustomerService.Services;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,19 @@ builder.Services.AddHttpClient("credit-rate", c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["CreditRateServiceUrl"]);
 });
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(rb => rb.AddEnvironmentVariableDetector()
+        .AddService("CustomerService"))
+    .WithTracing(tb =>
+    {
+        tb.SetSampler(new AlwaysOnSampler());
+        tb.AddAspNetCoreInstrumentation();
+        tb.AddOtlpExporter(otp =>
+        {
+            otp.Endpoint = new Uri("https://t.container-training.de");
+        });
+    });
 
 var app = builder.Build();
 
