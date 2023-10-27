@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Diagnostics.Metrics
 <PageTitle>Metrics Playground</PageTitle>
 
 <MudGrid>
@@ -53,24 +54,42 @@
     private int _upDownCounterCurrentValue = 0;
     private int _gaugeCurrentValue = 0;
     private double _histogramValue = double.Epsilon;
-    
+
+        public const string MeterName = "fp.monitoring.workshop.instrumentationlibrary";
+
+    private static Meter _meter = new(MeterName);
+    private Counter<int> _myCounter = _meter.CreateCounter<int>("playground.counter", "s", "get the value of the counter");
+    private UpDownCounter<int> _myUpDownCounter = _meter.CreateUpDownCounter<int>("playground.upDownCounter");
+    private Histogram<double> _myHistogram = _meter.CreateHistogram<double>("playground.histogram");
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _meter.CreateObservableCounter("playground.observablecounter", () => _counterCurrentValue);
+        _meter.CreateObservableUpDownCounter("playground.observableupDownCounter", () => _upDownCounterCurrentValue);
+        _meter.CreateObservableGauge("playground.gauge", () => _gaugeCurrentValue);
+    }
+
     private void IncrementCounter()
     {
+        _myCounter.Add(1);
         _counterCurrentValue++;
     }
     
     private void IncrementUpDownCounter()
     {
         _upDownCounterCurrentValue++;
+        _myUpDownCounter.Add(1, new KeyValuePair<string, object?>("mykey", "myvalue"));
     }
     
     private void DecrementUpDownCounter()
     {
         _upDownCounterCurrentValue--;
+        _myUpDownCounter.Add(-1, new KeyValuePair<string, object?>("mykey", "myvalue"));
     }
     
     private void RegisterHistogramEntry()
     {
-        System.Diagnostics.Debug.WriteLine(_histogramValue);
+        _myHistogram.Record(_histogramValue);
     }
 }
