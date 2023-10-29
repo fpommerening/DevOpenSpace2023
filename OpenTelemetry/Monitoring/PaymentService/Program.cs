@@ -1,3 +1,4 @@
+using FP.Monitoring.Common;
 using FP.Monitoring.Common.Models;
 using FP.Monitoring.PaymentService;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,13 @@ builder.Services.AddHttpClient("master", c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["MasterServiceUrl"]);
 });
+
+TelemetryBuilder
+    .ForConfiguration("PaymentService", builder.Configuration["OpenTelemetryUrl"])
+    .AddTracing(builder.Services)
+    .AddMetrics(builder.Services)
+    .AddLogging(builder.Logging)
+    .Build();
 
 var app = builder.Build();
 

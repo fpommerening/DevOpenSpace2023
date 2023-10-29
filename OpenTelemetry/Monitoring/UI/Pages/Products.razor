@@ -3,9 +3,11 @@
 @page "/Products"
 @using UI.Business
 @using System.Diagnostics
+@using FP.Monitoring.Common
 
 @inject OrderRepository OrderRepository;
 @inject NavigationManager NavigationManager;
+@inject IInstrumentation Instrumentation;
 
 <PageTitle>Produktübersicht</PageTitle>
 
@@ -54,6 +56,7 @@
     private async Task RefreshProducts()
     {
         Activity.Current = null;
+        using var activity = Instrumentation.ActivitySource.StartActivity("RefreshProducts");
         
         var products = await OrderRepository.GetProducts();
         

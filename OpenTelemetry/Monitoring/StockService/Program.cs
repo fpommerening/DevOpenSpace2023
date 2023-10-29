@@ -1,3 +1,4 @@
+using FP.Monitoring.Common;
 using FP.Monitoring.StockService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,14 @@ AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddHostedService<ProductMetricsService>();
+
+TelemetryBuilder
+    .ForConfiguration("StockService", builder.Configuration["OpenTelemetryUrl"])
+    .AddTracing(builder.Services)
+    .AddMetrics(builder.Services)
+    .AddLogging(builder.Logging)
+    .Build();
 
 var app = builder.Build();
 

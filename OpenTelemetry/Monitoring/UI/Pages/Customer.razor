@@ -1,7 +1,10 @@
 @page "/Customer"
 @using FP.Monitoring.Contract
+@using System.Diagnostics
+@using FP.Monitoring.Common
 
-@inject CustomerServices.CustomerServicesClient customerServiceCLient;
+@inject CustomerServices.CustomerServicesClient CustomerServiceCLient;
+@inject IInstrumentation Instrumentation
 
 <MudGrid>
     <MudItem xs="6">
@@ -75,6 +78,8 @@
 
     private async Task ValidateCustomer()
     {
+        Activity.Current = null;
+        using var activity = Instrumentation.ActivitySource.StartActivity("ValidateCustomer");
         var request = new RateCustomerRequest
         {
             Name = Model.LastName,
@@ -83,7 +88,7 @@
             Town = Model.Town,
             ZipCode = Model.ZipCode
         };
-        var result = await customerServiceCLient.RateCustomerAsync(request);
+        var result = await CustomerServiceCLient.RateCustomerAsync(request);
 
         Model.Reliability = result.Reliability;
         Model.IsValid = result.IsValid;

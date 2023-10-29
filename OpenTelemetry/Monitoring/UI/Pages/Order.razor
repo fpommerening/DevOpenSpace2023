@@ -1,9 +1,12 @@
 ﻿@page "/order/{productId:guid}"
 @using FP.Monitoring.UI.Business
+@using FP.Monitoring.Common
+@using System.Diagnostics
 
 @inject OrderRepository OrderRepository;
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager;
+@inject IInstrumentation Instrumentation;
 
 @if (Model == null)
 {
@@ -58,6 +61,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        
         Model ??= new OrderViewModel();
         
         if (Model.ProductId == ProductId)
@@ -66,6 +70,9 @@
         }
 
         Model.ProductId = ProductId;
+        
+        Activity.Current = null;
+        using var activity = Instrumentation.ActivitySource.StartActivity("GetProducts");
 
         var products = await OrderRepository.GetProducts();
         var product = products.FirstOrDefault(x => x.Id == ProductId);
@@ -78,6 +85,9 @@
 
     private async Task OrderProduct()
     {
+        Activity.Current = null;
+        using var activity = Instrumentation.ActivitySource.StartActivity("OrderProduct");
+        
         if (Model == null)
         {
             return;
