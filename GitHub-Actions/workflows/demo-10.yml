@@ -1,0 +1,20 @@
+name: demo 10
+on:
+  push:
+    branches: [ main ]
+jobs:
+  jobSource:
+    runs-on: ubuntu-latest
+    steps:
+      - id: step1
+        run: echo "varInStep=hallo world" >> $GITHUB_OUTPUT
+    outputs:
+      greeting: ${{ steps.step1.outputs.varInStep }}
+  jobTarget:
+    runs-on: windows-latest
+    needs: jobSource
+    steps:
+      - run: echo ${{ needs.jobSource.outputs.greeting }}
+
+
+    

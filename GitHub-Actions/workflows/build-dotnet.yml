@@ -1,0 +1,28 @@
+name: Build .NET 6
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore Dependencies
+        run: |
+          dotnet restore DemoApp/Client/src/Client.csproj
+          dotnet restore DemoApp/Server/src/Server.csproj
+      - name: Build
+        run: |
+          dotnet build --no-restore DemoApp/Client/src/Client.csproj
+          dotnet build --no-restore DemoApp/Server/src/Server.csproj
+      - name: Publish
+        run: |
+          dotnet publish --no-build DemoApp/Client/src/Client.csproj
+          dotnet publish --no-build DemoApp/Server/src/Server.csproj
+      

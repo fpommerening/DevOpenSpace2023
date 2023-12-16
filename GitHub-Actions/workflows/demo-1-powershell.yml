@@ -1,0 +1,11 @@
+name: demo-1 Powershell
+on:
+  push:
+    branches: [ main ]
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say Hallo
+        shell: pwsh 
+        run: echo Hallo DevOpenSpace 2023
