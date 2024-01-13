@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-dep
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - image: harbor.demo-apps.de/devopenspace/myweb:latest
+        name: app
+      imagePullSecrets:
+        - name: reg-cred-sec

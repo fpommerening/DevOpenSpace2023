@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: myuser-rolebinding
+  namespace: default
+subjects:
+  - kind: Group
+    name: oidc:admin-devopenspace
+    namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-reader-role
